@@ -36,7 +36,8 @@ jobs:
             echo "Failed to retrieve deployment URL"
             exit 1
           fi
-          HTTP_STATUS=$(curl -o /dev/null -s -w "%{http_code}" $DEPLOY_URL)
+          # Follow redirects and get the final HTTP status
+          HTTP_STATUS=$(curl -L -o /dev/null -s -w "%{http_code}" $DEPLOY_URL)
           if [ $HTTP_STATUS -eq 200 ]; then
             echo "Deployment successful! Site is accessible at $DEPLOY_URL"
           else
