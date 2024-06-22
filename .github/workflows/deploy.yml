@@ -24,7 +24,7 @@ jobs:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
         run: |
-          wrangler pages publish build --project-name=forms-editor-poc
+          wrangler pages deploy build --project-name=forms-editor-poc
       - name: Verify Deployment
         run: |
           echo "Waiting for deployment to propagate..."
