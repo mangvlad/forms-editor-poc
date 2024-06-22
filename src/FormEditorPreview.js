@@ -126,6 +126,201 @@ const FormEditorPreview = () => {
     document.addEventListener('mouseup', onMouseUp);
   };
 
+  const getPropertyEditorFields = (component) => {
+    const commonFields = [
+      {
+        type: 'textfield',
+        key: 'label',
+        label: 'Label',
+        required: true,
+        defaultValue: component.label
+      },
+      {
+        type: 'textfield',
+        key: 'key',
+        label: 'API Key',
+        required: true,
+        defaultValue: component.key
+      },
+      {
+        type: 'checkbox',
+        key: 'required',
+        label: 'Required',
+        defaultValue: component.required
+      }
+    ];
+
+    const typeSpecificFields = {
+      textfield: [
+        {
+          type: 'textfield',
+          key: 'placeholder',
+          label: 'Placeholder',
+          defaultValue: component.placeholder
+        },
+        {
+          type: 'number',
+          key: 'maxLength',
+          label: 'Maximum Length',
+          defaultValue: component.maxLength
+        }
+      ],
+      textarea: [
+        {
+          type: 'textfield',
+          key: 'placeholder',
+          label: 'Placeholder',
+          defaultValue: component.placeholder
+        },
+        {
+          type: 'number',
+          key: 'rows',
+          label: 'Rows',
+          defaultValue: component.rows || 3
+        }
+      ],
+      number: [
+        {
+          type: 'number',
+          key: 'min',
+          label: 'Minimum Value',
+          defaultValue: component.min
+        },
+        {
+          type: 'number',
+          key: 'max',
+          label: 'Maximum Value',
+          defaultValue: component.max
+        }
+      ],
+      checkbox: [
+        {
+          type: 'textfield',
+          key: 'name',
+          label: 'Name',
+          required: true,
+          defaultValue: component.name
+        }
+      ],
+      select: [
+        {
+          type: 'datagrid',
+          key: 'data.values',
+          label: 'Values',
+          reorder: true,
+          addAnotherPosition: 'bottom',
+          defaultValue: component.data?.values || [],
+          components: [
+            {
+              type: 'textfield',
+              key: 'label',
+              label: 'Label',
+              validate: {
+                required: true
+              }
+            },
+            {
+              type: 'textfield',
+              key: 'value',
+              label: 'Value',
+              validate: {
+                required: true
+              }
+            }
+          ]
+        },
+        {
+          type: 'checkbox',
+          key: 'multiple',
+          label: 'Allow Multiple Selections',
+          defaultValue: component.multiple || false
+        }
+      ],
+      selectboxes: [
+        {
+          type: 'datagrid',
+          key: 'values',
+          label: 'Values',
+          reorder: true,
+          addAnotherPosition: 'bottom',
+          defaultValue: component.values || [],
+          components: [
+            {
+              type: 'textfield',
+              key: 'label',
+              label: 'Label',
+              validate: {
+                required: true
+              }
+            },
+            {
+              type: 'textfield',
+              key: 'value',
+              label: 'Value',
+              validate: {
+                required: true
+              }
+            }
+          ]
+        }
+      ],
+      radio: [
+        {
+          type: 'datagrid',
+          key: 'values',
+          label: 'Values',
+          reorder: true,
+          addAnotherPosition: 'bottom',
+          defaultValue: component.values || [],
+          components: [
+            {
+              type: 'textfield',
+              key: 'label',
+              label: 'Label',
+              validate: {
+                required: true
+              }
+            },
+            {
+              type: 'textfield',
+              key: 'value',
+              label: 'Value',
+              validate: {
+                required: true
+              }
+            }
+          ]
+        }
+      ],
+      button: [
+        {
+          type: 'select',
+          key: 'action',
+          label: 'Action',
+          data: {
+            values: [
+              { label: 'Submit', value: 'submit' },
+              { label: 'Reset', value: 'reset' },
+              { label: 'Event', value: 'event' }
+            ]
+          },
+          defaultValue: component.action
+        }
+      ]
+    };
+
+    return [
+      ...commonFields,
+      ...(typeSpecificFields[component.type] || []),
+      {
+        type: 'button',
+        action: 'submit',
+        label: 'Save',
+        theme: 'primary'
+      }
+    ];
+  };
+
   // Custom builder options
   const builderOptions = {
     builder: {
@@ -233,46 +428,21 @@ const FormEditorPreview = () => {
           </div>
           <Form
             form={{
-              components: [
-                {
-                  type: 'textfield',
-                  key: 'label',
-                  label: 'Label',
-                  defaultValue: selectedComponent.label
-                },
-                {
-                  type: 'textfield',
-                  key: 'key',
-                  label: 'Key',
-                  defaultValue: selectedComponent.key
-                },
-                {
-                  type: 'checkbox',
-                  key: 'required',
-                  label: 'Required',
-                  defaultValue: selectedComponent.required
-                },
-                {
-                  type: 'textfield',
-                  key: 'placeholder',
-                  label: 'Placeholder',
-                  defaultValue: selectedComponent.placeholder
-                },
-                {
-                  type: 'textarea',
-                  key: 'description',
-                  label: 'Description',
-                  defaultValue: selectedComponent.description
-                },
-                {
-                  type: 'button',
-                  action: 'submit',
-                  label: 'Save',
-                  theme: 'primary'
-                }
-              ]
+              components: getPropertyEditorFields(selectedComponent)
             }}
-            onSubmit={(submission) => onPropertyPopupClose({...selectedComponent, ...submission.data})}
+            onSubmit={(submission) => {
+              let updatedComponent = { ...selectedComponent, ...submission.data };
+              if (updatedComponent.type === 'select') {
+                updatedComponent.data = { 
+                  values: submission.data['data.values']
+                };
+                updatedComponent.dataSrc = 'values';
+                updatedComponent.multiple = submission.data.multiple;
+              } else if (updatedComponent.type === 'selectboxes' || updatedComponent.type === 'radio') {
+                updatedComponent.values = submission.data.values;
+              }
+              onPropertyPopupClose(updatedComponent);
+            }}
           />
           <button onClick={() => onPropertyPopupClose(null)}>Cancel</button>
         </div>
