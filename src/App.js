@@ -1,23 +1,38 @@
-import logo from './logo.svg';
+import React, { useState } from 'react';
 import './App.css';
 
 function App() {
+  const [formFields, setFormFields] = useState([]);
+  const [newFieldName, setNewFieldName] = useState('');
+
+  const addField = () => {
+    if (newFieldName.trim() !== '') {
+      setFormFields([...formFields, { name: newFieldName, type: 'text' }]);
+      setNewFieldName('');
+    }
+  };
+
   return (
     <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+      <h1>Forms Editor POC</h1>
+      <div>
+        <input
+          type="text"
+          value={newFieldName}
+          onChange={(e) => setNewFieldName(e.target.value)}
+          placeholder="Enter field name"
+        />
+        <button onClick={addField}>Add Field</button>
+      </div>
+      <div>
+        <h2>Form Preview</h2>
+        {formFields.map((field, index) => (
+          <div key={index}>
+            <label>{field.name}: </label>
+            <input type={field.type} />
+          </div>
+        ))}
+      </div>
     </div>
   );
 }
