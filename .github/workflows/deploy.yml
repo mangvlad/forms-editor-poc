@@ -2,7 +2,7 @@ name: Deploy to Cloudflare Pages
 
 on:
   push:
-    branches: [main]
+    branches: [main]  # or your default branch
 
 jobs:
   deploy:
@@ -10,52 +10,22 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
-      - name: Use Node.js
+      - name: Setup Node
         uses: actions/setup-node@v2
         with:
-          node-version: '16'
-
-      - name: Cache dependencies
-        uses: actions/cache@v2
-        with:
-          path: ~/.npm
-          key: ${{ runner.OS }}-node-${{ hashFiles('**/package-lock.json') }}
-          restore-keys: |
-            ${{ runner.OS }}-node-
+          node-version: '18'  # Updated to Node.js 18
 
       - name: Install dependencies
         run: npm ci
-        
+
       - name: Build
         run: npm run build
-        env:
-          CI: false  # This prevents treats warnings as errors
 
-      - name: Install Wrangler
-        run: npm install -g wrangler
-
-      - name: Deploy to Cloudflare Pages
-        env:
-          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-        run: |
-          wrangler pages publish build --project-name=forms-editor-poc
-
-      - name: Verify Deployment
-        run: |
-          echo "Waiting for deployment to propagate..."
-          sleep 60  # Wait for 60 seconds
-          DEPLOY_URL=$(curl -s "https://api.cloudflare.com/client/v4/accounts/${{ secrets.CLOUDFLARE_ACCOUNT_ID }}/pages/projects/forms-editor-poc" \
-            -H "Authorization: Bearer ${{ secrets.CLOUDFLARE_API_TOKEN }}" \
-            -H "Content-Type: application/json" | jq -r '.result.domains[0]')
-          if [ -z "$DEPLOY_URL" ]; then
-            echo "Failed to retrieve deployment URL"
-            exit 1
-          fi
-          HTTP_STATUS=$(curl -o /dev/null -s -w "%{http_code}" $DEPLOY_URL)
-          if [ $HTTP_STATUS -eq 200 ]; then
-            echo "Deployment successful! Site is accessible at $DEPLOY_URL"
-          else
-            echo "Deployment may have failed. HTTP status: $HTTP_STATUS"
-            exit 1
-          fi
+      - name: Publish to Cloudflare Pages
+        uses: cloudflare/pages-action@v1
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          projectName: your-project-name  # replace with your Cloudflare Pages project name
+          directory: build
+          gitHubToken: ${{ secrets.GITHUB_TOKEN }}
