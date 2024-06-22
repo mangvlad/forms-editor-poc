@@ -1,38 +1,158 @@
+.form-editor-container {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+}
+
+.tabs {
+  display: flex;
+  background-color: #f0f0f0;
+  border-bottom: 1px solid #ccc;
+}
+
+.tab {
+  padding: 10px 20px;
+  cursor: pointer;
+  border: none;
+  background: none;
+  font-size: 16px;
+}
+
+.tab.active {
+  background-color: #fff;
+  border-bottom: 2px solid #4CAF50;
+}
+
+.editor-layout {
+  display: flex;
+  flex-grow: 1;
+  overflow: hidden;
+}
+
+.component-picker {
+  width: 250px;
+  background-color: #f0f0f0;
+  transition: width 0.3s ease;
+  overflow: hidden;
+  border-left: 1px solid #ccc;
+}
+
+.component-picker.closed {
+  width: 30px;
+}
+
+.component-picker button {
+  width: 100%;
+  padding: 10px;
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
+.component-list {
+  padding: 10px;
+}
+
+.component-list h3 {
+  margin-top: 15px;
+  margin-bottom: 10px;
+  font-size: 18px;
+}
+
+.draggable-component {
+  padding: 8px;
+  margin-bottom: 5px;
+  background-color: #fff;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  cursor: move;
+  transition: background-color 0.2s;
+}
+
+.draggable-component:hover {
+  background-color: #e0e0e0;
+}
+
+.form-builder {
+  flex-grow: 1;
+  padding: 20px;
+  overflow-y: auto;
+}
+
+/* Apply green borders only to the main form editor */
+.form-builder .formio-component {
+  cursor: pointer;
+}
+
+.form-builder .formio-component:hover {
+  outline: 2px solid #4CAF50;
+}
+
+.preview-container {
+  padding: 20px;
+  overflow-y: auto;
+  height: calc(100vh - 50px);
+}
+
+/* Hide default component group buttons and search */
+.formio-component-group-button,
+.formio-form-group-label,
+.formio-form-group,
+.builder-sidebar,
+.formio-dialog.formio-dialog-theme-default {
+  display: none !important;
+}
+
+/* Property Popup */
+.property-popup {
+  position: fixed;
+  background-color: white;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 0 10px rgba(0,0,0,0.1);
+  z-index: 1000;
+  min-width: 300px;
+  max-width: 500px;
+}
+
+.property-popup-header {
+  cursor: move;
+  padding: 10px;
+  background-color: #f0f0f0;
+  margin: -20px -20px 20px -20px;
+  border-top-left-radius: 8px;
+  border-top-right-radius: 8px;
+}
+
+.property-popup-header h3 {
+  margin: 0;
+}
+
+.property-popup button {
+  margin-top: 10px;
+  padding: 5px 10px;
+  background-color: #f0f0f0;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+/* Remove green borders from property popup and preview */
+.property-popup .formio-component:hover,
+.preview-container .formio-component:hover {
+  outline: none;
+}
+
+/* Existing styles */
 .App {
   text-align: center;
 }
 
-.App-logo {
-  height: 40vmin;
-  pointer-events: none;
+h2 {
+  margin-bottom: 20px;
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  .App-logo {
-    animation: App-logo-spin infinite 20s linear;
-  }
-}
-
-.App-header {
-  background-color: #282c34;
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  font-size: calc(10px + 2vmin);
-  color: white;
-}
-
-.App-link {
-  color: #61dafb;
-}
-
-@keyframes App-logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+/* Ensure the form takes up the full width of its container */
+.formio-form {
+  width: 100%;
 }
