@@ -17,14 +17,14 @@ jobs:
         run: npm ci
       - name: Build
         run: npm run build
-      - name: Publish to Cloudflare Pages
-        uses: cloudflare/pages-action@v1
-        with:
-          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          projectName: forms-editor-poc
-          directory: build
-          gitHubToken: ${{ secrets.GITHUB_TOKEN }}
+      - name: Install Wrangler
+        run: npm install -g wrangler
+      - name: Deploy to Cloudflare Pages
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          wrangler pages publish build --project-name=forms-editor-poc
       - name: Verify Deployment
         run: |
           echo "Waiting for deployment to propagate..."
@@ -32,6 +32,10 @@ jobs:
           DEPLOY_URL=$(curl -s "https://api.cloudflare.com/client/v4/accounts/${{ secrets.CLOUDFLARE_ACCOUNT_ID }}/pages/projects/forms-editor-poc" \
             -H "Authorization: Bearer ${{ secrets.CLOUDFLARE_API_TOKEN }}" \
             -H "Content-Type: application/json" | jq -r '.result.domains[0]')
+          if [ -z "$DEPLOY_URL" ]; then
+            echo "Failed to retrieve deployment URL"
+            exit 1
+          fi
           HTTP_STATUS=$(curl -o /dev/null -s -w "%{http_code}" $DEPLOY_URL)
           if [ $HTTP_STATUS -eq 200 ]; then
             echo "Deployment successful! Site is accessible at $DEPLOY_URL"
