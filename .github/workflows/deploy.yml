@@ -12,12 +12,9 @@ jobs:
       - name: Use Node.js
         uses: actions/setup-node@v2
         with:
-          node-version: '16'  # Updated to a more recent LTS version
+          node-version: '16'
       - name: Install dependencies
-        run: |
-          npm --version
-          node --version
-          npm ci --verbose
+        run: npm ci
       - name: Build
         run: npm run build
       - name: Publish to Cloudflare Pages
@@ -28,3 +25,15 @@ jobs:
           projectName: forms-editor-poc
           directory: build
           gitHubToken: ${{ secrets.GITHUB_TOKEN }}
+        env:
+          DEBUG: '*'
+      - name: Log Deployment Error
+        if: failure()
+        run: |
+          echo "Cloudflare Pages deployment failed"
+          echo "API Token (length): ${#CLOUDFLARE_API_TOKEN}"
+          echo "Account ID (length): ${#CLOUDFLARE_ACCOUNT_ID}"
+          echo "Project Name: ${{ github.event.repository.name }}"
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
