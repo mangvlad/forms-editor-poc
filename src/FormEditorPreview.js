@@ -23,12 +23,13 @@ const FormEditorPreview = () => {
   const popupRef = useRef(null);
 
   const onFormChange = (schema) => {
+    console.log('Form schema changed:', schema);
     setFormSchema(schema);
   };
 
   useEffect(() => {
     if (activeTab === 'preview') {
-      // Refresh preview when switching to the preview tab
+      console.log('Switching to preview tab');
     }
   }, [activeTab]);
 
@@ -68,11 +69,19 @@ const FormEditorPreview = () => {
     event.preventDefault();
     const componentType = event.dataTransfer.getData('componentType');
     if (componentType) {
+      console.log('Dropping component of type:', componentType);
       const newComponent = {
         type: componentType,
         label: components.basic.components[componentType] || components.layout.components[componentType],
         key: `${componentType}${Date.now()}`
       };
+      if (componentType === 'select') {
+        newComponent.data = { values: [] };
+        newComponent.dataSrc = 'values';
+        newComponent.valueProperty = 'value';
+        newComponent.dataType = 'auto';
+      }
+      console.log('New component:', newComponent);
       setFormSchema(prevSchema => ({
         ...prevSchema,
         components: [...prevSchema.components.filter(c => c.type !== 'button'), newComponent, ...prevSchema.components.filter(c => c.type === 'button')]
@@ -88,6 +97,7 @@ const FormEditorPreview = () => {
   };
 
   const onPropertyPopupClose = (updatedComponent) => {
+    console.log('Property popup closing with updated component:', updatedComponent);
     if (updatedComponent) {
       setFormSchema(prevSchema => ({
         ...prevSchema,
@@ -101,9 +111,17 @@ const FormEditorPreview = () => {
   };
 
   const onComponentClick = (component) => {
-    setSelectedComponent(component);
+    console.log('Component clicked:', component);
+    const componentCopy = JSON.parse(JSON.stringify(component));
+    
+    if (componentCopy.type === 'select') {
+      componentCopy.data = componentCopy.data || {};
+      componentCopy.data.values = componentCopy.data.values || [];
+    }
+    
+    setSelectedComponent(componentCopy);
     setShowPropertyPopup(true);
-    setPopupPosition({ x: 100, y: 100 }); // Default position when editing
+    setPopupPosition({ x: 100, y: 100 });
   };
 
   const startDraggingPopup = (e) => {
@@ -127,6 +145,7 @@ const FormEditorPreview = () => {
   };
 
   const getPropertyEditorFields = (component) => {
+    console.log('Getting property editor fields for:', component);
     const commonFields = [
       {
         type: 'textfield',
@@ -430,17 +449,21 @@ const FormEditorPreview = () => {
             form={{
               components: getPropertyEditorFields(selectedComponent)
             }}
+            submission={{data: selectedComponent}}
+            onChange={(submission) => console.log('Property editor form changed:', submission)}
             onSubmit={(submission) => {
+              console.log('Property editor form submitted:', submission);
               let updatedComponent = { ...selectedComponent, ...submission.data };
               if (updatedComponent.type === 'select') {
-                updatedComponent.data = { 
-                  values: submission.data['data.values']
-                };
+                updatedComponent.data = updatedComponent.data || {};
+                updatedComponent.data.values = submission.data['data.values'] || [];
                 updatedComponent.dataSrc = 'values';
-                updatedComponent.multiple = submission.data.multiple;
+                updatedComponent.valueProperty = 'value';
+                updatedComponent.dataType = 'auto';
               } else if (updatedComponent.type === 'selectboxes' || updatedComponent.type === 'radio') {
                 updatedComponent.values = submission.data.values;
               }
+              console.log('Updated component:', updatedComponent);
               onPropertyPopupClose(updatedComponent);
             }}
           />
