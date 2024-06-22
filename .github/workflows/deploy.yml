@@ -25,15 +25,17 @@ jobs:
           projectName: forms-editor-poc
           directory: build
           gitHubToken: ${{ secrets.GITHUB_TOKEN }}
-        env:
-          DEBUG: '*'
-      - name: Log Deployment Error
-        if: failure()
+      - name: Verify Deployment
         run: |
-          echo "Cloudflare Pages deployment failed"
-          echo "API Token (length): ${#CLOUDFLARE_API_TOKEN}"
-          echo "Account ID (length): ${#CLOUDFLARE_ACCOUNT_ID}"
-          echo "Project Name: ${{ github.event.repository.name }}"
-        env:
-          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          echo "Waiting for deployment to propagate..."
+          sleep 60  # Wait for 60 seconds
+          DEPLOY_URL=$(curl -s "https://api.cloudflare.com/client/v4/accounts/${{ secrets.CLOUDFLARE_ACCOUNT_ID }}/pages/projects/forms-editor-poc" \
+            -H "Authorization: Bearer ${{ secrets.CLOUDFLARE_API_TOKEN }}" \
+            -H "Content-Type: application/json" | jq -r '.result.domains[0]')
+          HTTP_STATUS=$(curl -o /dev/null -s -w "%{http_code}" $DEPLOY_URL)
+          if [ $HTTP_STATUS -eq 200 ]; then
+            echo "Deployment successful! Site is accessible at $DEPLOY_URL"
+          else
+            echo "Deployment may have failed. HTTP status: $HTTP_STATUS"
+            exit 1
+          fi
