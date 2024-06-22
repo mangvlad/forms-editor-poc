@@ -12,9 +12,14 @@ jobs:
       - name: Use Node.js
         uses: actions/setup-node@v2
         with:
-          node-version: '14'
-      - run: npm ci
-      - run: npm run build
+          node-version: '16'  # Updated to a more recent LTS version
+      - name: Install dependencies
+        run: |
+          npm --version
+          node --version
+          npm ci --verbose
+      - name: Build
+        run: npm run build
       - name: Publish to Cloudflare Pages
         uses: cloudflare/pages-action@v1
         with:
