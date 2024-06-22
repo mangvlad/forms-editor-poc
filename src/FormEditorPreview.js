@@ -83,7 +83,29 @@ const SelectPropertyEditor = ({ component, onSave, onCancel }) => {
 };
 
 const FormEditorPreview = () => {
-  // ... (previous state and other functions remain the same)
+  const [formSchema, setFormSchema] = useState({
+    components: [
+      {
+        type: 'button',
+        label: 'Submit',
+        key: 'submit',
+        disableOnInvalid: true,
+        input: true,
+        tableView: false
+      }
+    ]
+  });
+  const [activeTab, setActiveTab] = useState('editor');
+  const [isComponentPickerOpen, setIsComponentPickerOpen] = useState(true);
+  const [showPropertyPopup, setShowPropertyPopup] = useState(false);
+  const [selectedComponent, setSelectedComponent] = useState(null);
+  const [popupPosition, setPopupPosition] = useState({ x: 0, y: 0 });
+  const popupRef = useRef(null);
+
+  const onFormChange = (schema) => {
+    console.log('Form schema changed:', schema);
+    setFormSchema(schema);
+  };
 
   const onComponentClick = (component) => {
     console.log('Component clicked:', component);
@@ -106,11 +128,17 @@ const FormEditorPreview = () => {
     setSelectedComponent(null);
   };
 
-  // ... (rest of the component remains the same)
+  const getPropertyEditorFields = (component) => {
+    // Implement this function based on your requirements
+    // Return an array of form fields for editing component properties
+    return [];
+  };
+
+  // ... (other functions like onDragStart, onDrop, etc. remain the same)
 
   return (
     <div className="form-editor-container">
-      {/* ... (other JSX remains the same) */}
+      {/* ... (tabs and form builder JSX remains the same) */}
 
       {showPropertyPopup && selectedComponent && (
         <div 
